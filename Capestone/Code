@@ -1,0 +1,81 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_FILES 100
+#define MAX_FILENAME_LENGTH 50
+#define MAX_FILE_SIZE 1024
+
+typedef struct {
+    char name[MAX_FILENAME_LENGTH];
+    char content[MAX_FILE_SIZE];
+    int size;
+} File;
+
+typedef struct {
+    char name[MAX_FILENAME_LENGTH];
+    File files[MAX_FILES];
+    int file_count;
+} Directory;
+
+Directory root;
+
+void init_file_system() {
+    strcpy(root.name, "root");
+    root.file_count = 0;
+}
+
+File* create_file(char* name) {
+    if (root.file_count >= MAX_FILES) {
+        printf("Cannot create file. Maximum file limit reached.\n");
+        return NULL;
+    }
+
+    File* file = &root.files[root.file_count++];
+    strcpy(file->name, name);
+    file->size = 0;
+    printf("File '%s' created successfully.\n", name);
+    return file;
+}
+
+void delete_file(char* name) {
+    for (int i = 0; i < root.file_count; i++) {
+        if (strcmp(root.files[i].name, name) == 0) {
+            for (int j = i; j < root.file_count - 1; j++) {
+                root.files[j] = root.files[j + 1];
+            }
+            root.file_count--;
+            printf("File '%s' deleted successfully.\n", name);
+            return;
+        }
+    }
+    printf("File '%s' not found.\n", name);
+}
+
+void write_to_file(File* file, char* content) {
+    strcpy(file->content, content);
+    file->size = strlen(content);
+    printf("Content written to file '%s' successfully.\n", file->name);
+}
+
+void read_file(File* file) {
+    printf("Content of file '%s':\n%s\n", file->name, file->content);
+}
+
+int main() {
+    init_file_system();
+
+    File* file1 = create_file("file1.txt");
+    write_to_file(file1, "This is the content of file1.txt");
+
+    File* file2 = create_file("file2.txt");
+    write_to_file(file2, "This is the content of file2.txt");
+
+    read_file(file1);
+    read_file(file2);
+
+    delete_file("file1.txt");
+    delete_file("file3.txt"); // This should print "File 'file3.txt' not found."
+
+    return 0;
+} 
